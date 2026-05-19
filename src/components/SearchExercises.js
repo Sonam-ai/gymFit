@@ -11,8 +11,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 
 import { exerciseOptions, fetchData } from './utils/fetchData';
-import { getAllBodyPartPhoto } from '../utils/exercisePhotoFallback';
-import { loadExerciseMedia } from '../utils/exerciseMedia';
+import { getBodyPartImage } from '../utils/bodyPartImages';
 import HorizontalScrollbar from './HorizontalScrollbar';
 
 const SearchExercises = ({
@@ -24,7 +23,6 @@ const SearchExercises = ({
   const theme = useTheme();
   const [search, setSearch] = useState('');
   const [bodyParts, setBodyParts] = useState([]);
-  const [bodyPartImages, setBodyPartImages] = useState({ all: getAllBodyPartPhoto() });
 
   useEffect(() => {
     const fetchExercisesData = async () => {
@@ -40,37 +38,6 @@ const SearchExercises = ({
 
     fetchExercisesData();
   }, []);
-
-  useEffect(() => {
-    if (bodyParts.length <= 1) return;
-
-    const fetchBodyPartImages = async () => {
-      const allExercises = await fetchData(
-        'https://exercisedb.p.rapidapi.com/exercises',
-        exerciseOptions,
-      );
-
-      if (!Array.isArray(allExercises)) return;
-
-      const images = { all: getAllBodyPartPhoto() };
-
-      await Promise.all(
-        bodyParts
-          .filter((part) => part !== 'all')
-          .map(async (part) => {
-            const match = allExercises.find((exercise) => exercise.bodyPart === part);
-            if (!match) return;
-
-            const media = await loadExerciseMedia(match, 180);
-            if (media?.src) images[part] = media.src;
-          }),
-      );
-
-      setBodyPartImages((prev) => ({ ...prev, ...images }));
-    };
-
-    fetchBodyPartImages();
-  }, [bodyParts]);
 
   const scrollToResults = () => {
     document.getElementById('exercises')?.scrollIntoView({ behavior: 'smooth' });
@@ -231,7 +198,9 @@ const SearchExercises = ({
           data={bodyParts}
           bodyPart={bodyPart}
           setBodyPart={setBodyPart}
-          bodyPartImages={bodyPartImages}
+          bodyPartImages={Object.fromEntries(
+            bodyParts.map((part) => [part, getBodyPartImage(part)]),
+          )}
         />
       </Box>
     </Box>

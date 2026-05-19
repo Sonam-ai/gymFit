@@ -42,19 +42,19 @@ export const getTheme = (mode) => createTheme({
   ...shared,
   palette: {
     mode,
-    primary: { main: '#FF2625', light: '#FF5C52', dark: '#D91E1E' },
-    secondary: { main: mode === 'light' ? '#3A1212' : '#FFB4B0' },
+    primary: { main: '#2F8F83', light: '#74C7BA', dark: '#1E655D' },
+    secondary: { main: mode === 'light' ? '#516B5F' : '#BFE3DA' },
     background: {
-      default: mode === 'light' ? '#F4F6FB' : '#0D0D12',
-      paper: mode === 'light' ? '#FFFFFF' : '#18181F',
+      default: mode === 'light' ? '#F5F8F6' : '#0D1416',
+      paper: mode === 'light' ? '#FFFFFF' : '#162022',
     },
     text: {
-      primary: mode === 'light' ? '#1A1D2E' : '#F2F3F7',
-      secondary: mode === 'light' ? '#5C6178' : '#A0A4B8',
+      primary: mode === 'light' ? '#203532' : '#EFF7F4',
+      secondary: mode === 'light' ? '#60736E' : '#A9BDB7',
     },
-    divider: mode === 'light' ? '#E8ECF4' : '#2A2A38',
+    divider: mode === 'light' ? '#DDE9E5' : '#263839',
     action: {
-      hover: mode === 'light' ? 'rgba(255, 38, 37, 0.06)' : 'rgba(255, 77, 77, 0.1)',
+      hover: mode === 'light' ? 'rgba(47, 143, 131, 0.08)' : 'rgba(116, 199, 186, 0.12)',
     },
   },
 });

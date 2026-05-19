@@ -50,7 +50,7 @@ const BodyPart = ({ item, bodyPart, setBodyPart, imageUrl }) => {
           minWidth: 220,
           maxWidth: 250,
           flex: '0 0 220px',
-          height: 260,
+          height: 276,
           borderRadius: 3,
           bgcolor: 'background.paper',
           alignItems: 'center',
@@ -60,7 +60,7 @@ const BodyPart = ({ item, bodyPart, setBodyPart, imageUrl }) => {
           border: 2,
           borderColor: isSelected ? 'primary.main' : 'divider',
           boxShadow: isSelected
-            ? `0 12px 32px ${theme.palette.mode === 'light' ? 'rgba(255,38,37,0.15)' : 'rgba(255,38,37,0.25)'}`
+            ? `0 12px 32px ${theme.palette.mode === 'light' ? 'rgba(47,143,131,0.16)' : 'rgba(116,199,186,0.24)'}`
             : theme.palette.mode === 'light'
               ? '0 4px 20px rgba(26, 29, 46, 0.08)'
               : '0 4px 20px rgba(0, 0, 0, 0.35)',
@@ -74,12 +74,12 @@ const BodyPart = ({ item, bodyPart, setBodyPart, imageUrl }) => {
         <Box
           sx={{
             width: '100%',
-            height: 165,
+            height: 190,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
-            bgcolor: theme.palette.mode === 'light' ? '#F0F2F8' : '#252532',
+            bgcolor: theme.palette.mode === 'light' ? '#EEF7F4' : '#10201F',
           }}
         >
           <Box
@@ -88,7 +88,13 @@ const BodyPart = ({ item, bodyPart, setBodyPart, imageUrl }) => {
             alt={`${item} exercises`}
             loading="lazy"
             onError={handleImageError}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transition: 'transform 0.35s ease, filter 0.35s ease',
+              filter: isSelected ? 'saturate(1.08)' : 'saturate(0.95)',
+            }}
           />
         </Box>
 

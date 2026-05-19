@@ -1,23 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Box,
   Chip,
+  IconButton,
   Stack,
+  Tooltip,
   Typography,
   useTheme,
 } from '@mui/material';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 
 import ExerciseGif from './ExerciseGif';
 import { normalizeExercise } from '../utils/exerciseData';
+import { isFavoriteExercise, toggleFavoriteExercise } from '../utils/favoriteExercises';
 
 const ExerciseCard = ({ exercise: rawExercise }) => {
   const theme = useTheme();
   const exercise = normalizeExercise(rawExercise);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    if (!exercise?.id) return;
+
+    setIsFavorite(isFavoriteExercise(exercise.id));
+  }, [exercise?.id]);
 
   if (!exercise) return null;
+
+  const handleFavoriteClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setIsFavorite(toggleFavoriteExercise(exercise));
+  };
 
   return (
     <Box
@@ -32,6 +51,7 @@ const ExerciseCard = ({ exercise: rawExercise }) => {
         borderTop: 4,
         borderTopColor: 'primary.main',
         overflow: 'hidden',
+        position: 'relative',
         textDecoration: 'none',
         display: 'flex',
         flexDirection: 'column',
@@ -42,11 +62,49 @@ const ExerciseCard = ({ exercise: rawExercise }) => {
         '&:hover': {
           transform: 'translateY(-6px)',
           boxShadow: theme.palette.mode === 'light'
-            ? '0 16px 40px rgba(255, 38, 37, 0.12)'
-            : '0 16px 40px rgba(255, 38, 37, 0.2)',
+            ? '0 16px 40px rgba(47, 143, 131, 0.14)'
+            : '0 16px 40px rgba(79, 188, 172, 0.2)',
         },
       }}
     >
+      <Tooltip
+        title={isFavorite ? 'Remove from My Workout' : 'Save to My Workout'}
+        arrow
+      >
+        <IconButton
+          aria-label={isFavorite ? 'Remove from favorite exercises' : 'Save favorite exercise'}
+          aria-pressed={isFavorite}
+          onClick={handleFavoriteClick}
+          sx={{
+            position: 'absolute',
+            top: 14,
+            right: 14,
+            zIndex: 2,
+            width: 44,
+            height: 44,
+            bgcolor: isFavorite
+              ? 'rgba(47, 143, 131, 0.96)'
+              : theme.palette.mode === 'light'
+                ? 'rgba(255, 255, 255, 0.92)'
+                : 'rgba(26, 29, 46, 0.9)',
+            color: isFavorite ? '#fff' : 'primary.main',
+            border: 1,
+            borderColor: isFavorite ? 'primary.main' : 'divider',
+            boxShadow: theme.palette.mode === 'light'
+              ? '0 10px 28px rgba(26, 29, 46, 0.16)'
+              : '0 10px 28px rgba(0, 0, 0, 0.42)',
+            backdropFilter: 'blur(10px)',
+            transition: 'transform 0.2s ease, background-color 0.2s ease, color 0.2s ease',
+            '&:hover': {
+              bgcolor: isFavorite ? 'primary.dark' : 'background.paper',
+              transform: 'scale(1.08)',
+            },
+          }}
+        >
+          {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+        </IconButton>
+      </Tooltip>
+
       <ExerciseGif
         exercise={exercise}
         height={280}

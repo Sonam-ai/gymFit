@@ -93,7 +93,7 @@ const ExerciseSteps = ({ exercise, showGif = true }) => {
                   mb: 2,
                   p: 2,
                   borderRadius: 2,
-                  bgcolor: theme.palette.mode === 'light' ? '#FFF8F8' : '#2a1a1a',
+                  bgcolor: theme.palette.mode === 'light' ? '#EEF7F4' : '#10201F',
                   borderLeft: 4,
                   borderColor: 'primary.main',
                 }}

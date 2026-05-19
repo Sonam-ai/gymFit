@@ -15,6 +15,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Loader from '../components/Loader';
 import ExerciseGif from '../components/ExerciseGif';
 import ExerciseSteps from '../components/ExerciseSteps';
+import ExerciseVideos from '../components/ExerciseVideos';
 import { exerciseOptions, fetchData } from '../components/utils/fetchData';
 import { normalizeExercise } from '../utils/exerciseData';
 
@@ -168,6 +169,16 @@ const ExerciseDetail = () => {
           }}
         >
           <ExerciseSteps exercise={exercise} showGif={false} />
+          <Box
+            sx={{
+              mt: 4,
+              pt: 4,
+              borderTop: 1,
+              borderColor: 'divider',
+            }}
+          >
+            <ExerciseVideos exercise={exercise} />
+          </Box>
         </Paper>
       </Stack>
     </Box>

@@ -19,7 +19,7 @@ import { useColorMode } from '../context/ColorModeContext';
 
 const navLinkSx = {
   textDecoration: 'none',
-  fontSize: { xs: '18px', sm: '20px' },
+  fontSize: { xs: '14px', sm: '16px', md: '20px' },
   fontWeight: 600,
   color: 'text.primary',
   pb: 0.5,
@@ -76,8 +76,14 @@ const Navbar = () => {
           </Typography>
         </Stack>
 
-        <Stack direction="row" alignItems="center" spacing={{ xs: 2, sm: 4 }}>
-          <Stack direction="row" spacing={{ xs: 2.5, sm: 4 }}>
+        <Stack direction="row" alignItems="center" spacing={{ xs: 1.5, sm: 3 }}>
+          <Stack
+            direction="row"
+            spacing={{ xs: 1.5, sm: 2.5, md: 4 }}
+            flexWrap="wrap"
+            useFlexGap
+            justifyContent="flex-end"
+          >
             <Link component={RouterLink} to="/" sx={navLinkSx}>
               Home
             </Link>
@@ -86,6 +92,9 @@ const Navbar = () => {
             </Link>
             <Link href="#exercises" sx={navLinkSx}>
               Exercises
+            </Link>
+            <Link component={RouterLink} to="/my-workout" sx={navLinkSx}>
+              My Workout
             </Link>
           </Stack>
 

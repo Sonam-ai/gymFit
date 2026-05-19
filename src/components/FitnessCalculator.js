@@ -64,6 +64,15 @@ const FitnessCalculator = ({ onSelectWorkout }) => {
       workouts,
       goalLabel: GOALS.find((g) => g.value === goal)?.label,
     });
+
+    localStorage.setItem('fitness-calculator-results', JSON.stringify({
+      bmi,
+      bmiInfo,
+      bmr,
+      calories,
+      goalLabel: GOALS.find((g) => g.value === goal)?.label,
+    }));
+    window.dispatchEvent(new Event('fitness-calculator-updated'));
   };
 
   return (
@@ -101,8 +110,8 @@ const FitnessCalculator = ({ onSelectWorkout }) => {
           overflow: 'hidden',
           background:
             theme.palette.mode === 'light'
-              ? 'linear-gradient(135deg, #FFFFFF 0%, #FFF8F8 100%)'
-              : 'linear-gradient(135deg, #18181F 0%, #1a1218 100%)',
+              ? 'linear-gradient(135deg, #FFFFFF 0%, #EEF7F4 100%)'
+              : 'linear-gradient(135deg, #171F22 0%, #10201F 100%)',
         }}
       >
         <Box

@@ -19,30 +19,30 @@ const ExerciseGif = ({
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+  let cancelled = false;
 
-    const load = async () => {
-      setLoading(true);
-      setImgError(false);
+  const load = async () => {
+    setLoading(true);
+    setImgError(false);
 
-      const result = await loadExerciseMedia(exercise, resolution);
+    const result = await loadExerciseMedia(exercise, resolution);
 
-      if (!cancelled) {
-        setMedia(result);
-        setLoading(false);
-      }
-    };
-
-    if (exercise?.id || exercise?.name) {
-      load();
-    } else {
+    if (!cancelled) {
+      setMedia(result);
       setLoading(false);
     }
+  };
 
-    return () => {
-      cancelled = true;
-    };
-  }, [exercise?.id, exercise?.name, exercise?.bodyPart, resolution]);
+  if (exercise?.id || exercise?.name) {
+    load();
+  } else {
+    setLoading(false);
+  }
+
+  return () => {
+    cancelled = true;
+  };
+}, [exercise, resolution]);
 
   const showPlaceholder = !media?.src || imgError;
 

@@ -15,8 +15,8 @@ const HeroBanner = () => {
         borderRadius: 4,
         overflow: 'hidden',
         background: theme.palette.mode === 'light'
-          ? 'linear-gradient(135deg, #FFFFFF 0%, #FFF0F0 50%, #F4F6FB 100%)'
-          : 'linear-gradient(135deg, #18181F 0%, #1f1218 50%, #0D0D12 100%)',
+          ? 'linear-gradient(135deg, #FFFFFF 0%, #EEF7F4 52%, #F5F8F6 100%)'
+          : 'linear-gradient(135deg, #171F22 0%, #112322 52%, #0D1416 100%)',
         border: 1,
         borderColor: 'divider',
       }}
@@ -32,7 +32,7 @@ const HeroBanner = () => {
             mb: 1,
           }}
         >
-          Fitness Club
+          Fitness Buddy
         </Typography>
         <Typography
           sx={{
@@ -42,9 +42,9 @@ const HeroBanner = () => {
             color: 'text.primary',
           }}
         >
-          Sweat, Smile
+          Move, Breathe
           <br />
-          and Repeat
+          and Feel Better
         </Typography>
         <Typography
           sx={{
