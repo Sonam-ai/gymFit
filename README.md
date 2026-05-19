@@ -53,13 +53,13 @@ An AI-powered fitness web application built with React and Material UI that help
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/fitfusion-ai.git
+git clone https://github.com/sonam-ai/gymFit.git
 ```
 
 Navigate to project folder:
 
 ```bash
-cd fitfusion-ai
+cd gymFit
 ```
 
 Install dependencies:
@@ -116,6 +116,6 @@ REACT_APP_RAPID_API_KEY=your_api_key
 
 ## 👨‍💻 Author
 
-Your Name
+SONAM SHARAN
 
 GitHub: https://github.com/sonam-ai
