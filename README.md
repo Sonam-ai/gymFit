@@ -38,12 +38,20 @@ An AI-powered fitness web application built with React and Material UI that help
 
 ## 📸 Screenshots
 
-<img width="1872" height="887" alt="Screenshot 2026-05-19 102144" src="https://github.com/user-attachments/assets/5ae57465-b628-45aa-8cb6-f6aab2afc44b" />
-<img width="1865" height="891" alt="Screenshot 2026-05-19 101816" src="https://github.com/user-attachments/assets/4f6e06cc-62d4-4800-b6b9-7cb79a13492a" />
-<img width="1541" height="582" alt="Screenshot 2026-05-19 101705" src="https://github.com/user-attachments/assets/822a9100-08b5-43f7-8629-2d747f22eca7" />
-<img width="1592" height="916" alt="Screenshot 2026-05-19 101622" src="https://github.com/user-attachments/assets/8264b879-1864-45d9-9613-06783c97b4da" />
-<img width="1762" height="706" alt="Screenshot 2026-05-19 101456" src="https://github.com/user-attachments/assets/27376b51-35a8-45fe-9a88-8f9c36bd53d0" />
-<img width="1878" height="591" alt="Screenshot 2026-05-19 101301" src="https://github.com/user-attachments/assets/a37d036f-57bf-40ce-96b6-c95e130fefbe" />
+<img width="1902" height="627" alt="image" src="https://github.com/user-attachments/assets/40ef7d1e-3980-484d-b359-781b8259cc16" />
+<img width="1906" height="726" alt="image" src="https://github.com/user-attachments/assets/b87c775d-276e-4e21-bf3e-02dd6a49a8c0" />
+<img width="1898" height="722" alt="image" src="https://github.com/user-attachments/assets/14a75685-30f2-4ca5-b93f-333e87cda139" />
+<img width="1897" height="898" alt="image" src="https://github.com/user-attachments/assets/f3f1cbed-9f2a-453a-83bb-d1e988668015" />
+<img width="1896" height="895" alt="image" src="https://github.com/user-attachments/assets/160d6a23-0796-49bd-b630-c56f41ff6dcc" />
+<img width="1897" height="893" alt="image" src="https://github.com/user-attachments/assets/9d400346-ec84-4016-a7a7-7f5aea0bb9a5" />
+<img width="1888" height="882" alt="image" src="https://github.com/user-attachments/assets/3fe07c55-a569-49ab-be2d-5f715ff444ff" />
+
+
+
+
+
+
+
 
 
 ---
