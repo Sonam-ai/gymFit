@@ -96,7 +96,7 @@ REACT_APP_RAPID_API_KEY=your_api_key
 
 ## 🌐 Live Demo
 
-[Live Website](https://your-deployment-link.com)
+[Live Website](https://gymfit-ai.netlify.app/)
 
 ---
 
