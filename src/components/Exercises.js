@@ -2,9 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import Pagination from '@mui/material/Pagination';
 import { Box, Stack, Typography } from '@mui/material';
 
-import { exerciseOptions, fetchData } from './utils/fetchData';
+import {
+  exerciseOptions,
+  fetchData,
+  getAllExercisesUrl,
+  getBodyPartExercisesUrl,
+} from './utils/fetchData';
 import ExerciseCard from './ExerciseCard';
 import Loader from './Loader';
+import { FALLBACK_EXERCISES } from '../utils/exerciseFallbackData';
 
 const Exercises = ({ exercises, setExercises, bodyPart, isSearchResult }) => {
   const [loading, setLoading] = useState(true);
@@ -30,22 +36,24 @@ const Exercises = ({ exercises, setExercises, bodyPart, isSearchResult }) => {
 
       if (bodyPart === 'all') {
         exercisesData = await fetchData(
-          'https://exercisedb.p.rapidapi.com/exercises',
+          getAllExercisesUrl(),
           exerciseOptions,
         );
       } else {
         exercisesData = await fetchData(
-          `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPart}`,
+          getBodyPartExercisesUrl(bodyPart),
           exerciseOptions,
         );
       }
 
       if (cancelled || isSearchResultRef.current) return;
 
-      if (Array.isArray(exercisesData)) {
+      if (Array.isArray(exercisesData) && exercisesData.length > 0) {
         setExercises(exercisesData);
       } else {
-        setExercises([]);
+        setExercises(bodyPart === 'all'
+          ? FALLBACK_EXERCISES
+          : FALLBACK_EXERCISES.filter((exercise) => exercise.bodyPart === bodyPart));
       }
 
       setLoading(false);

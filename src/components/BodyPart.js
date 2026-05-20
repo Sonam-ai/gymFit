@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Chip, Stack, Typography, useTheme } from '@mui/material';
 
 import { getBodyPartImage } from '../utils/bodyPartImages';
 
-const BodyPart = ({ item, bodyPart, setBodyPart, imageUrl }) => {
+const BodyPart = ({
+  item,
+  bodyPart,
+  setBodyPart,
+  imageUrl,
+  isAnimated = false,
+  isLoadingAnimation = false,
+}) => {
   const theme = useTheme();
   const [isHovered, setIsHovered] = useState(false);
   const [imgSrc, setImgSrc] = useState(imageUrl || getBodyPartImage(item));
@@ -73,6 +80,7 @@ const BodyPart = ({ item, bodyPart, setBodyPart, imageUrl }) => {
       >
         <Box
           sx={{
+            position: 'relative',
             width: '100%',
             height: 190,
             display: 'flex',
@@ -96,6 +104,22 @@ const BodyPart = ({ item, bodyPart, setBodyPart, imageUrl }) => {
               filter: isSelected ? 'saturate(1.08)' : 'saturate(0.95)',
             }}
           />
+          {(isAnimated || isLoadingAnimation) && (
+            <Chip
+              label={isAnimated ? 'API image' : 'Loading image'}
+              size="small"
+              sx={{
+                position: 'absolute',
+                top: 10,
+                left: 10,
+                zIndex: 2,
+                bgcolor: 'rgba(0,0,0,0.62)',
+                color: '#fff',
+                fontWeight: 700,
+                maxWidth: 'calc(100% - 20px)',
+              }}
+            />
+          )}
         </Box>
 
         <Typography

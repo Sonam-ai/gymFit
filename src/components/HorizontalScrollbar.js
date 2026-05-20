@@ -8,6 +8,8 @@ const HorizontalScrollbar = ({
   bodyPart,
   setBodyPart,
   bodyPartImages = {},
+  animatedBodyParts = {},
+  loadingAnimatedBodyParts = {},
 }) => {
   const theme = useTheme();
 
@@ -53,6 +55,8 @@ const HorizontalScrollbar = ({
               bodyPart={bodyPart}
               setBodyPart={setBodyPart}
               imageUrl={bodyPartImages[item]}
+              isAnimated={animatedBodyParts[item]}
+              isLoadingAnimation={loadingAnimatedBodyParts[item]}
             />
           ))}
         </Stack>

@@ -10,9 +10,29 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { exerciseOptions, fetchData } from './utils/fetchData';
+import {
+  exerciseOptions,
+  fetchData,
+  getAllExercisesUrl,
+} from './utils/fetchData';
 import { getBodyPartImage } from '../utils/bodyPartImages';
+import { DEFAULT_BODY_PARTS } from '../utils/exerciseFallbackData';
+import { fixHttps } from '../utils/exerciseData';
 import HorizontalScrollbar from './HorizontalScrollbar';
+
+const getStaticBodyPartImages = (parts) => Object.fromEntries(
+  parts.map((part) => [part, getBodyPartImage(part)]),
+);
+
+const getExerciseImageUrl = (exercise) => fixHttps(
+  exercise?.imageUrl
+    || exercise?.image
+    || exercise?.thumbnail
+    || exercise?.gifUrl
+    || exercise?.gif
+    || exercise?.mediaUrl
+    || '',
+);
 
 const SearchExercises = ({
   bodyPart,
@@ -22,7 +42,12 @@ const SearchExercises = ({
 }) => {
   const theme = useTheme();
   const [search, setSearch] = useState('');
-  const [bodyParts, setBodyParts] = useState([]);
+  const [bodyParts, setBodyParts] = useState(DEFAULT_BODY_PARTS);
+  const [bodyPartImages, setBodyPartImages] = useState(() => (
+    getStaticBodyPartImages(DEFAULT_BODY_PARTS)
+  ));
+  const [animatedBodyParts, setAnimatedBodyParts] = useState({});
+  const [loadingAnimatedBodyParts, setLoadingAnimatedBodyParts] = useState({});
 
   useEffect(() => {
     const fetchExercisesData = async () => {
@@ -33,11 +58,71 @@ const SearchExercises = ({
 
       if (Array.isArray(bodyPartData)) {
         setBodyParts(['all', ...bodyPartData]);
+      } else {
+        setBodyParts(DEFAULT_BODY_PARTS);
       }
     };
 
     fetchExercisesData();
   }, []);
+
+  useEffect(() => {
+    setBodyPartImages((current) => ({
+      ...getStaticBodyPartImages(bodyParts),
+      ...current,
+    }));
+  }, [bodyParts]);
+
+  useEffect(() => {
+    if (bodyParts.length === 0) return undefined;
+
+    let cancelled = false;
+
+    const fetchAnimatedBodyPartImages = async () => {
+      setLoadingAnimatedBodyParts(Object.fromEntries(bodyParts.map((part) => [part, true])));
+
+      const exerciseData = await fetchData(getAllExercisesUrl(), exerciseOptions);
+
+      if (!Array.isArray(exerciseData)) {
+        setLoadingAnimatedBodyParts({});
+        return;
+      }
+
+      const nextImages = {};
+      const nextAnimated = {};
+
+      await Promise.all(
+        bodyParts.map(async (part) => {
+          const exercise = part === 'all'
+            ? exerciseData.find((item) => item?.id)
+            : exerciseData.find((item) => item?.bodyPart === part && item?.id);
+
+          if (!exercise?.id) return;
+
+          const imageUrl = getExerciseImageUrl(exercise);
+          if (imageUrl) {
+            nextImages[part] = imageUrl;
+            nextAnimated[part] = true;
+          }
+        }),
+      );
+
+      if (!cancelled && Object.keys(nextImages).length > 0) {
+        setBodyPartImages((current) => ({ ...current, ...nextImages }));
+        setAnimatedBodyParts((current) => ({ ...current, ...nextAnimated }));
+      }
+
+      if (!cancelled) {
+        setLoadingAnimatedBodyParts({});
+      }
+    };
+
+    fetchAnimatedBodyPartImages();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bodyParts]);
 
   const scrollToResults = () => {
     document.getElementById('exercises')?.scrollIntoView({ behavior: 'smooth' });
@@ -62,7 +147,7 @@ const SearchExercises = ({
     setIsSearchResult?.(true);
 
     const exerciseData = await fetchData(
-      'https://exercisedb.p.rapidapi.com/exercises',
+      getAllExercisesUrl(),
       exerciseOptions,
     );
 
@@ -198,9 +283,9 @@ const SearchExercises = ({
           data={bodyParts}
           bodyPart={bodyPart}
           setBodyPart={setBodyPart}
-          bodyPartImages={Object.fromEntries(
-            bodyParts.map((part) => [part, getBodyPartImage(part)]),
-          )}
+          bodyPartImages={bodyPartImages}
+          animatedBodyParts={animatedBodyParts}
+          loadingAnimatedBodyParts={loadingAnimatedBodyParts}
         />
       </Box>
     </Box>

@@ -14,6 +14,16 @@ export const youtubeOptions = {
   },
 };
 
+export const EXERCISE_FETCH_LIMIT = 2000;
+
+export const getAllExercisesUrl = () => (
+  `https://exercisedb.p.rapidapi.com/exercises?limit=${EXERCISE_FETCH_LIMIT}&offset=0`
+);
+
+export const getBodyPartExercisesUrl = (bodyPart) => (
+  `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${encodeURIComponent(bodyPart)}?limit=${EXERCISE_FETCH_LIMIT}&offset=0`
+);
+
 export const fetchData = async (url, options) => {
   try {
     const response = await fetch(url, options);
