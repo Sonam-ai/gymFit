@@ -1,9 +1,25 @@
-const buildPrompt = ({ goal, equipment, experience, duration }) => {
+const getFitnessContextPrompt = (fitnessContext) => {
+  if (!fitnessContext?.bmi) return 'No BMI context has been calculated yet.';
+
+  return [
+    `BMI: ${fitnessContext.bmi} (${fitnessContext.bmiInfo?.label || 'uncategorized'}).`,
+    fitnessContext.goalLabel ? `Calculator goal: ${fitnessContext.goalLabel}.` : '',
+    fitnessContext.bmi >= 30
+      ? 'Prioritize low-impact cardio, joint-friendly strength work, longer warm-ups, and gradual progression.'
+      : '',
+    fitnessContext.bmi < 18.5
+      ? 'Prioritize muscle-building strength work, moderate volume, and recovery.'
+      : '',
+  ].filter(Boolean).join(' ');
+};
+
+const buildPrompt = ({ goal, equipment, experience, duration, fitnessContext }) => {
   const goalLabel = goal === 'muscle_gain' ? 'muscle gain' : 'fat loss';
 
   return `You are a certified personal trainer. Create a single ${duration}-minute workout plan for ${goalLabel}.
 Equipment available: ${equipment}.
 Experience level: ${experience}.
+User fitness context: ${getFitnessContextPrompt(fitnessContext)}
 
 Return ONLY valid JSON (no markdown) in this exact shape:
 {

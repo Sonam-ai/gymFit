@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Chip, Stack, Typography, useTheme } from '@mui/material';
 
 import { getBodyPartImage } from '../utils/bodyPartImages';
+import ExercisePlaceholder from './ExercisePlaceholder';
 
 const BodyPart = ({
   item,
@@ -14,15 +15,24 @@ const BodyPart = ({
   const theme = useTheme();
   const [isHovered, setIsHovered] = useState(false);
   const [imgSrc, setImgSrc] = useState(imageUrl || getBodyPartImage(item));
+  const [imageFailed, setImageFailed] = useState(false);
   const isSelected = bodyPart === item;
   const showIndicator = isSelected || isHovered;
 
   useEffect(() => {
     setImgSrc(imageUrl || getBodyPartImage(item));
+    setImageFailed(false);
   }, [imageUrl, item]);
 
   const handleImageError = () => {
-    setImgSrc(getBodyPartImage(item));
+    const fallback = getBodyPartImage(item);
+
+    if (imgSrc && imgSrc !== fallback) {
+      setImgSrc(fallback);
+      return;
+    }
+
+    setImageFailed(true);
   };
 
   return (
@@ -90,20 +100,24 @@ const BodyPart = ({
             bgcolor: theme.palette.mode === 'light' ? '#EEF7F4' : '#10201F',
           }}
         >
-          <Box
-            component="img"
-            src={imgSrc}
-            alt={`${item} exercises`}
-            loading="lazy"
-            onError={handleImageError}
-            sx={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              transition: 'transform 0.35s ease, filter 0.35s ease',
-              filter: isSelected ? 'saturate(1.08)' : 'saturate(0.95)',
-            }}
-          />
+          {imageFailed ? (
+            <ExercisePlaceholder name={item} height={190} />
+          ) : (
+            <Box
+              component="img"
+              src={imgSrc}
+              alt={`${item} exercises`}
+              loading="lazy"
+              onError={handleImageError}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                transition: 'transform 0.35s ease, filter 0.35s ease',
+                filter: isSelected ? 'saturate(1.08)' : 'saturate(0.95)',
+              }}
+            />
+          )}
           {(isAnimated || isLoadingAnimation) && (
             <Chip
               label={isAnimated ? 'API image' : 'Loading image'}

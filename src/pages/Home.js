@@ -10,6 +10,13 @@ const Home = () => {
   const [exercises, setExercises] = useState([]);
   const [bodyPart, setBodyPart] = useState('all');
   const [isSearchResult, setIsSearchResult] = useState(false);
+  const [fitnessContext, setFitnessContext] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('fitness-calculator-results')) || null;
+    } catch {
+      return null;
+    }
+  });
 
   const handleBodyPartChange = (part) => {
     setIsSearchResult(false);
@@ -26,7 +33,10 @@ const Home = () => {
   return (
     <Box>
       <HeroBanner />
-      <FitnessCalculator onSelectWorkout={handleWorkoutSuggestion} />
+      <FitnessCalculator
+        onSelectWorkout={handleWorkoutSuggestion}
+        onResultsChange={setFitnessContext}
+      />
       <SearchExercises
         setExercises={setExercises}
         bodyPart={bodyPart}
@@ -41,6 +51,7 @@ const Home = () => {
       />
 
       <WorkoutGenerator
+        fitnessContext={fitnessContext}
         onBrowseBodyPart={handleBodyPartChange}
         onScrollToExercises={() => {
           document.getElementById('exercises')?.scrollIntoView({ behavior: 'smooth' });

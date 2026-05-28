@@ -12,6 +12,44 @@
   }
 }
 
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  transition:
+    background-color 240ms ease,
+    color 240ms ease;
+}
+
+body,
+.MuiCssBaseline-root,
+.MuiPaper-root,
+.MuiBox-root,
+.MuiCard-root,
+.MuiDrawer-paper,
+.MuiAppBar-root,
+.MuiTypography-root,
+.MuiButton-root,
+.MuiInputBase-root,
+.MuiOutlinedInput-root,
+.MuiChip-root,
+.exercise-card,
+.exercise-skeleton-card {
+  transition:
+    background-color 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    color 240ms ease,
+    fill 240ms ease;
+}
+
 .workout-generator-fab {
   animation: workout-fab-glow 2.2s ease-in-out infinite;
 }

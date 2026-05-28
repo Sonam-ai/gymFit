@@ -25,7 +25,7 @@ import {
   validateInputs,
 } from '../utils/fitnessCalculations';
 
-const FitnessCalculator = ({ onSelectWorkout }) => {
+const FitnessCalculator = ({ onSelectWorkout, onResultsChange }) => {
   const theme = useTheme();
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
@@ -56,21 +56,25 @@ const FitnessCalculator = ({ onSelectWorkout }) => {
     const calories = calculateDailyCalories(bmr, goal);
     const workouts = getWorkoutSuggestions(bmi, goal);
 
-    setResults({
+    const nextResults = {
       bmi,
       bmiInfo,
       bmr,
       calories,
       workouts,
       goalLabel: GOALS.find((g) => g.value === goal)?.label,
-    });
+      goal,
+      height: h,
+      weight: w,
+      age: a,
+    };
+
+    setResults(nextResults);
+    onResultsChange?.(nextResults);
 
     localStorage.setItem('fitness-calculator-results', JSON.stringify({
-      bmi,
-      bmiInfo,
-      bmr,
-      calories,
-      goalLabel: GOALS.find((g) => g.value === goal)?.label,
+      ...nextResults,
+      workouts: undefined,
     }));
     window.dispatchEvent(new Event('fitness-calculator-updated'));
   };

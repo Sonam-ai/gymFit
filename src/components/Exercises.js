@@ -9,7 +9,7 @@ import {
   getBodyPartExercisesUrl,
 } from './utils/fetchData';
 import ExerciseCard from './ExerciseCard';
-import Loader from './Loader';
+import ExerciseSkeletonCard from './ExerciseSkeletonCard';
 import { FALLBACK_EXERCISES } from '../utils/exerciseFallbackData';
 
 const Exercises = ({ exercises, setExercises, bodyPart, isSearchResult }) => {
@@ -88,7 +88,33 @@ const Exercises = ({ exercises, setExercises, bodyPart, isSearchResult }) => {
           borderColor: 'divider',
         }}
       >
-        <Loader />
+        <Typography
+          variant="h4"
+          fontWeight={700}
+          color="text.primary"
+          sx={{ fontSize: { lg: '40px', xs: '28px' }, mb: 1 }}
+        >
+          Loading Exercises
+        </Typography>
+        <Typography color="text.secondary" mb={4}>
+          Fetching fresh ExerciseDB results and animations.
+        </Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              lg: 'repeat(3, minmax(0, 1fr))',
+            },
+            gap: 3,
+            width: '100%',
+          }}
+        >
+          {Array.from({ length: 6 }).map((_, index) => (
+            <ExerciseSkeletonCard key={`exercise-skeleton-${index}`} />
+          ))}
+        </Box>
       </Box>
     );
   }

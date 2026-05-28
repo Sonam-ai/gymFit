@@ -18,6 +18,7 @@ import ExerciseSteps from '../components/ExerciseSteps';
 import ExerciseVideos from '../components/ExerciseVideos';
 import { exerciseOptions, fetchData } from '../components/utils/fetchData';
 import { normalizeExercise } from '../utils/exerciseData';
+import { FALLBACK_EXERCISES } from '../utils/exerciseFallbackData';
 
 const ExerciseDetail = () => {
   const { id } = useParams();
@@ -35,8 +36,10 @@ const ExerciseDetail = () => {
         exerciseOptions,
       );
 
-      if (data?.name) {
-        setExercise(normalizeExercise(data));
+      const fallbackExercise = FALLBACK_EXERCISES.find((item) => item.id === id);
+
+      if (data?.name || fallbackExercise) {
+        setExercise(normalizeExercise(data?.name ? data : fallbackExercise));
       } else {
         setExercise(null);
       }

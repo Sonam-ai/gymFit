@@ -16,7 +16,7 @@ import {
   getAllExercisesUrl,
 } from './utils/fetchData';
 import { getBodyPartImage } from '../utils/bodyPartImages';
-import { DEFAULT_BODY_PARTS } from '../utils/exerciseFallbackData';
+import { DEFAULT_BODY_PARTS, FALLBACK_EXERCISES } from '../utils/exerciseFallbackData';
 import { fixHttps } from '../utils/exerciseData';
 import HorizontalScrollbar from './HorizontalScrollbar';
 
@@ -83,10 +83,7 @@ const SearchExercises = ({
 
       const exerciseData = await fetchData(getAllExercisesUrl(), exerciseOptions);
 
-      if (!Array.isArray(exerciseData)) {
-        setLoadingAnimatedBodyParts({});
-        return;
-      }
+      const exercisesForImages = Array.isArray(exerciseData) ? exerciseData : FALLBACK_EXERCISES;
 
       const nextImages = {};
       const nextAnimated = {};
@@ -94,8 +91,8 @@ const SearchExercises = ({
       await Promise.all(
         bodyParts.map(async (part) => {
           const exercise = part === 'all'
-            ? exerciseData.find((item) => item?.id)
-            : exerciseData.find((item) => item?.bodyPart === part && item?.id);
+            ? exercisesForImages.find((item) => item?.id)
+            : exercisesForImages.find((item) => item?.bodyPart === part && item?.id);
 
           if (!exercise?.id) return;
 
@@ -151,12 +148,9 @@ const SearchExercises = ({
       exerciseOptions,
     );
 
-    if (!Array.isArray(exerciseData)) {
-      scrollToResults();
-      return;
-    }
+    const exercisesForSearch = Array.isArray(exerciseData) ? exerciseData : FALLBACK_EXERCISES;
 
-    const searchedExercises = exerciseData.filter(
+    const searchedExercises = exercisesForSearch.filter(
       (exercise) => exercise.name?.toLowerCase().includes(term)
         || exercise.target?.toLowerCase().includes(term)
         || exercise.equipment?.toLowerCase().includes(term)

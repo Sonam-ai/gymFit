@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Chip, CircularProgress, useTheme } from '@mui/material';
 
-import { loadExerciseMedia } from '../utils/exerciseMedia';
+import { getDirectGifUrl, loadExerciseMedia } from '../utils/exerciseMedia';
 import { getExercisePhotoFallback } from '../utils/exercisePhotoFallback';
 import ExercisePlaceholder from './ExercisePlaceholder';
 
@@ -19,32 +19,37 @@ const ExerciseGif = ({
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
-  let cancelled = false;
+    let cancelled = false;
 
-  const load = async () => {
-    setLoading(true);
-    setImgError(false);
+    const load = async () => {
+      setLoading(true);
+      setImgError(false);
 
-    const result = await loadExerciseMedia(exercise, resolution);
+      const result = await loadExerciseMedia(exercise, resolution);
 
-    if (!cancelled) {
-      setMedia(result);
+      if (!cancelled) {
+        setMedia(result);
+        setLoading(false);
+      }
+    };
+
+    if (exercise?.id || exercise?.name) {
+      load();
+    } else {
       setLoading(false);
     }
-  };
 
-  if (exercise?.id || exercise?.name) {
-    load();
-  } else {
-    setLoading(false);
-  }
+    return () => {
+      cancelled = true;
+    };
+  }, [exercise, resolution]);
 
-  return () => {
-    cancelled = true;
-  };
-}, [exercise, resolution]);
-
-  const showPlaceholder = !media?.src || imgError;
+  const directImageUrl = getDirectGifUrl(exercise);
+  const directImageNeedsHeaders = directImageUrl.includes('exercisedb.p.rapidapi.com/image');
+  const fallbackImageUrl = getExercisePhotoFallback(exercise);
+  const imageSrc = media?.src || (directImageNeedsHeaders ? '' : directImageUrl) || fallbackImageUrl;
+  const isAnimated = Boolean(media?.isAnimated || (directImageUrl && !directImageNeedsHeaders));
+  const showPlaceholder = !imageSrc || imgError;
 
   return (
     <Box
@@ -80,7 +85,7 @@ const ExerciseGif = ({
         <>
           {showLabel && (
             <Chip
-              label={media.isAnimated ? 'Animated' : 'Photo'}
+              label={isAnimated ? 'Animated' : 'Photo'}
               size="small"
               sx={{
                 position: 'absolute',
@@ -96,14 +101,13 @@ const ExerciseGif = ({
           )}
           <Box
             component="img"
-            src={media.src}
+            src={imageSrc}
             alt={alt || exercise?.name || 'Exercise'}
             loading="lazy"
             referrerPolicy="no-referrer"
             onError={() => {
-              const fallback = getExercisePhotoFallback(exercise);
-              if (media?.src !== fallback) {
-                setMedia({ src: fallback, isAnimated: false, source: 'photo-fallback' });
+              if (imageSrc !== fallbackImageUrl) {
+                setMedia({ src: fallbackImageUrl, isAnimated: false, source: 'photo-fallback' });
                 setImgError(false);
               } else {
                 setImgError(true);
@@ -112,8 +116,8 @@ const ExerciseGif = ({
             sx={{
               width: '100%',
               height: '100%',
-              objectFit: media.isAnimated ? 'contain' : 'cover',
-              p: media.isAnimated ? 1 : 0,
+              objectFit: isAnimated ? 'contain' : 'cover',
+              p: isAnimated ? 1 : 0,
               opacity: loading ? 0.4 : 1,
               transition: 'opacity 0.35s ease',
             }}

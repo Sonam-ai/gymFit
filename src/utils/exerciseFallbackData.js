@@ -12,7 +12,7 @@ export const DEFAULT_BODY_PARTS = [
   'waist',
 ];
 
-export const FALLBACK_EXERCISES = [
+const MOCK_EXERCISE_DATA = [
   {
     id: 'fallback-pull-up',
     name: 'assisted pull-up',
@@ -134,3 +134,14 @@ export const FALLBACK_EXERCISES = [
     ],
   },
 ];
+
+export const FALLBACK_EXERCISES = MOCK_EXERCISE_DATA.map((exercise) => ({
+  gifUrl: '',
+  secondaryMuscles: [],
+  description: 'Temporary local mock exercise used when ExerciseDB is unavailable.',
+  difficulty: '',
+  category: '',
+  ...exercise,
+}));
+
+export const MOCK_EXERCISES = FALLBACK_EXERCISES;

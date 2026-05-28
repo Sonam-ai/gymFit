@@ -31,7 +31,7 @@ import {
   generateWorkoutPlan,
 } from '../utils/workoutGenerator';
 
-const WorkoutGenerator = ({ onBrowseBodyPart, onScrollToExercises }) => {
+const WorkoutGenerator = ({ fitnessContext, onBrowseBodyPart, onScrollToExercises }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [open, setOpen] = useState(false);
@@ -53,6 +53,7 @@ const WorkoutGenerator = ({ onBrowseBodyPart, onScrollToExercises }) => {
         equipment,
         experience,
         duration,
+        fitnessContext,
       });
       setPlan(result);
     } catch {
@@ -158,6 +159,35 @@ const WorkoutGenerator = ({ onBrowseBodyPart, onScrollToExercises }) => {
                   ))}
                 </Select>
               </FormControl>
+
+              {fitnessContext?.bmi ? (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    border: 1,
+                    borderColor: 'divider',
+                    bgcolor: 'background.paper',
+                  }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                    <Chip
+                      label={`BMI ${fitnessContext.bmi}`}
+                      color={fitnessContext.bmiInfo?.color || 'default'}
+                      size="small"
+                      sx={{ fontWeight: 700 }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      Using your {fitnessContext.bmiInfo?.label?.toLowerCase() || 'latest'} result as plan context.
+                    </Typography>
+                  </Stack>
+                </Paper>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Calculate BMI first to personalize this plan automatically.
+                </Typography>
+              )}
 
               <FormControl fullWidth size={isMobile ? 'small' : 'medium'}>
                 <InputLabel>Equipment</InputLabel>

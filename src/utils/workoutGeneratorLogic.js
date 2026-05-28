@@ -98,6 +98,23 @@ const COOLDOWN = [
   { name: 'Deep breathing', sets: 1, reps: '1 min', rest: '0 sec' },
 ];
 
+const LOW_IMPACT_EXERCISES = [
+  { name: 'Incline wall push-up', bodyPart: 'chest' },
+  { name: 'Sit-to-stand squat', bodyPart: 'upper legs' },
+  { name: 'Step touch', bodyPart: 'cardio' },
+  { name: 'Standing band row', bodyPart: 'back' },
+  { name: 'Dead bug', bodyPart: 'waist' },
+  { name: 'Glute bridge', bodyPart: 'upper legs' },
+];
+
+const STRENGTH_BIAS_EXERCISES = [
+  { name: 'Goblet squat', bodyPart: 'upper legs' },
+  { name: 'Dumbbell row', bodyPart: 'back' },
+  { name: 'Push-up progression', bodyPart: 'chest' },
+  { name: 'Shoulder press', bodyPart: 'shoulders' },
+  { name: 'Biceps curl', bodyPart: 'upper arms' },
+];
+
 const PRESETS = {
   beginner: { sets: 3, reps: '12', rest: '60 sec', rounds: 1 },
   intermediate: { sets: 3, reps: '10', rest: '45 sec', rounds: 1 },
@@ -147,18 +164,30 @@ export const generateCustomWorkoutPlan = ({
   equipment,
   experience,
   duration,
+  fitnessContext,
 }) => {
-  const goalKey = goal === 'muscle_gain' ? 'muscle_gain' : 'fat_loss';
-  const pool = EXERCISE_POOL[equipment]?.[goalKey] || EXERCISE_POOL.bodyweight[goalKey];
+  const shouldBiasMuscle = fitnessContext?.bmi < 18.5 || goal === 'muscle_gain';
+  const shouldUseLowImpact = fitnessContext?.bmi >= 30 && goal !== 'muscle_gain';
+  const goalKey = shouldBiasMuscle ? 'muscle_gain' : 'fat_loss';
+  const basePool = EXERCISE_POOL[equipment]?.[goalKey] || EXERCISE_POOL.bodyweight[goalKey];
+  const pool = shouldUseLowImpact
+    ? [...LOW_IMPACT_EXERCISES, ...basePool.filter((exercise) => exercise.bodyPart !== 'cardio')]
+    : shouldBiasMuscle
+      ? [...STRENGTH_BIAS_EXERCISES, ...basePool]
+      : basePool;
   const preset = PRESETS[experience] || PRESETS.intermediate;
   const mainCount = exerciseCountForDuration(duration, experience);
 
   const mainExercises = pickExercises(pool, mainCount).map((ex) => ({
     ...ex,
     sets: preset.sets,
-    reps: goalKey === 'fat_loss' ? '15' : preset.reps,
-    rest: goalKey === 'fat_loss' ? '30 sec' : preset.rest,
-    notes: goalKey === 'fat_loss' ? 'Controlled tempo, stay in motion' : 'Focus on form, last reps challenging',
+    reps: shouldUseLowImpact ? '10-12 controlled' : goalKey === 'fat_loss' ? '15' : preset.reps,
+    rest: shouldUseLowImpact ? '45-60 sec' : goalKey === 'fat_loss' ? '30 sec' : preset.rest,
+    notes: shouldUseLowImpact
+      ? 'Low-impact pace; stop if joints feel strained'
+      : goalKey === 'fat_loss'
+        ? 'Controlled tempo, stay in motion'
+        : 'Focus on form, last reps challenging',
   }));
 
   const warmupMinutes = Math.min(5, Math.floor(duration * 0.15));
@@ -169,8 +198,13 @@ export const generateCustomWorkoutPlan = ({
   const equipLabel = EQUIPMENT_OPTIONS.find((e) => e.value === equipment)?.label || equipment;
   const expLabel = EXPERIENCE_OPTIONS.find((e) => e.value === experience)?.label || experience;
 
-  const tips =
-    goalKey === 'fat_loss'
+  const tips = shouldUseLowImpact
+    ? [
+        'Keep impact low and build consistency before intensity.',
+        'Use a longer warm-up and stop movements that bother knees, hips, or back.',
+        'Aim for steady breathing and gradual weekly progress.',
+      ]
+    : goalKey === 'fat_loss'
       ? [
           'Keep rest periods short to elevate heart rate.',
           'Stay hydrated and maintain steady breathing.',
@@ -181,6 +215,10 @@ export const generateCustomWorkoutPlan = ({
           'Prioritize compound movements early in the session.',
           'Eat enough protein (roughly 1.6–2g per kg bodyweight).',
         ];
+
+  if (fitnessContext?.bmi) {
+    tips.unshift(`Plan adjusted using BMI ${fitnessContext.bmi} (${fitnessContext.bmiInfo?.label || 'calculated'}).`);
+  }
 
   return {
     title: `${duration}-Min ${goalLabel} Workout`,

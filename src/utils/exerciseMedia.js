@@ -12,13 +12,20 @@ export const getDirectGifUrl = (exercise) => {
 
   const direct =
     exercise.gifUrl
-    || exercise.image
     || exercise.imageUrl
+    || exercise.image
     || exercise.gif
+    || exercise.animatedGifUrl
+    || exercise.animationUrl
     || exercise.mediaUrl;
 
   return fixHttps(direct);
 };
+
+const isRapidApiImageEndpoint = (url) => (
+  typeof url === 'string'
+  && url.includes('exercisedb.p.rapidapi.com/image')
+);
 
 export const loadExerciseMedia = async (exercise, resolution = 360) => {
   if (!exercise) {
@@ -29,6 +36,11 @@ export const loadExerciseMedia = async (exercise, resolution = 360) => {
     };
   }
 
+  const directUrl = getDirectGifUrl(exercise);
+  if (directUrl && !isRapidApiImageEndpoint(directUrl)) {
+    return { src: directUrl, isAnimated: true, source: 'api-direct' };
+  }
+
   if (exercise.id) {
     const blobUrl = await fetchExerciseGifBlobUrl(exercise.id, resolution);
     if (blobUrl) {
@@ -36,14 +48,8 @@ export const loadExerciseMedia = async (exercise, resolution = 360) => {
     }
   }
 
-  const directUrl = getDirectGifUrl(exercise);
   if (directUrl) {
-    return { src: directUrl, isAnimated: true, source: 'api-direct' };
-  }
-
-  if (exercise.id) {
-    const legacyUrl = fixHttps(`https://static.exercisedb.dev/media/${exercise.id}.gif`);
-    return { src: legacyUrl, isAnimated: true, source: 'cdn' };
+    return { src: directUrl, isAnimated: true, source: 'api-image-url' };
   }
 
   return {
