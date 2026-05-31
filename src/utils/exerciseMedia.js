@@ -1,32 +1,27 @@
-import { fetchExerciseGifBlobUrl } from '../components/utils/fetchData';
 import { getExercisePhotoFallback } from './exercisePhotoFallback';
 
-export const fixHttps = (url) => {
-  if (!url || typeof url !== 'string') return '';
-  if (url.startsWith('http://')) return url.replace('http://', 'https://');
-  return url;
-};
+export const fixHttps = (url) => url;
 
+/**
+ * Maps exercise IDs directly to your public assets folder string.
+ * Example: /assets/exercise_images/0001.gif
+ */
 export const getDirectGifUrl = (exercise) => {
   if (!exercise) return '';
 
-  const direct =
-    exercise.gifUrl
-    || exercise.imageUrl
-    || exercise.image
-    || exercise.gif
-    || exercise.animatedGifUrl
-    || exercise.animationUrl
-    || exercise.mediaUrl;
+  const targetId = exercise.id || exercise._id;
+  if (!targetId) return '';
 
-  return fixHttps(direct);
+  // Zero-pad the ID to match your filenames exactly (e.g., "0003")
+  const cleanId = String(targetId).padStart(4, '0');
+
+  // Direct reference to the public folder directory
+  return `/assets/exercise_images/${cleanId}.gif`;
 };
 
-const isRapidApiImageEndpoint = (url) => (
-  typeof url === 'string'
-  && url.includes('exercisedb.p.rapidapi.com/image')
-);
-
+/**
+ * Delivers the public URL smoothly to your components
+ */
 export const loadExerciseMedia = async (exercise, resolution = 360) => {
   if (!exercise) {
     return {
@@ -36,25 +31,11 @@ export const loadExerciseMedia = async (exercise, resolution = 360) => {
     };
   }
 
-  const directUrl = getDirectGifUrl(exercise);
-  if (directUrl && !isRapidApiImageEndpoint(directUrl)) {
-    return { src: directUrl, isAnimated: true, source: 'api-direct' };
-  }
-
-  if (exercise.id) {
-    const blobUrl = await fetchExerciseGifBlobUrl(exercise.id, resolution);
-    if (blobUrl) {
-      return { src: blobUrl, isAnimated: true, source: 'api-blob' };
-    }
-  }
-
-  if (directUrl) {
-    return { src: directUrl, isAnimated: true, source: 'api-image-url' };
-  }
+  const localPath = getDirectGifUrl(exercise);
 
   return {
-    src: getExercisePhotoFallback(exercise),
-    isAnimated: false,
-    source: 'photo-fallback',
+    src: localPath,
+    isAnimated: true,
+    source: 'public-folder-direct',
   };
 };

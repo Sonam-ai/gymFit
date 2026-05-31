@@ -2,12 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Pagination from '@mui/material/Pagination';
 import { Box, Stack, Typography } from '@mui/material';
 
-import {
-  exerciseOptions,
-  fetchData,
-  getAllExercisesUrl,
-  getBodyPartExercisesUrl,
-} from './utils/fetchData';
+import { fetchData } from './utils/fetchData'; // Directly use the clean local fetch engine
 import ExerciseCard from './ExerciseCard';
 import ExerciseSkeletonCard from './ExerciseSkeletonCard';
 import { FALLBACK_EXERCISES } from '../utils/exerciseFallbackData';
@@ -21,6 +16,7 @@ const Exercises = ({ exercises, setExercises, bodyPart, isSearchResult }) => {
   isSearchResultRef.current = isSearchResult;
 
   useEffect(() => {
+    // If the data came straight from a keyword search box entry, skip the category load lifecycle
     if (isSearchResult) {
       setLoading(false);
       return undefined;
@@ -33,17 +29,14 @@ const Exercises = ({ exercises, setExercises, bodyPart, isSearchResult }) => {
       setCurrentPage(1);
 
       let exercisesData = null;
+      
+      // Clean and lowercase normalize incoming category titles (e.g. "Cardio" -> "cardio")
+      const targetBodyPart = String(bodyPart).toLowerCase().trim();
 
-      if (bodyPart === 'all') {
-        exercisesData = await fetchData(
-          getAllExercisesUrl(),
-          exerciseOptions,
-        );
+      if (targetBodyPart === 'all') {
+        exercisesData = await fetchData('/api/exercises');
       } else {
-        exercisesData = await fetchData(
-          getBodyPartExercisesUrl(bodyPart),
-          exerciseOptions,
-        );
+        exercisesData = await fetchData(`/api/exercises/bodypart/${encodeURIComponent(targetBodyPart)}`);
       }
 
       if (cancelled || isSearchResultRef.current) return;
@@ -51,9 +44,10 @@ const Exercises = ({ exercises, setExercises, bodyPart, isSearchResult }) => {
       if (Array.isArray(exercisesData) && exercisesData.length > 0) {
         setExercises(exercisesData);
       } else {
-        setExercises(bodyPart === 'all'
+        // Safe structural fallback mapping query arrays if the local server returns unexpected shapes
+        setExercises(targetBodyPart === 'all'
           ? FALLBACK_EXERCISES
-          : FALLBACK_EXERCISES.filter((exercise) => exercise.bodyPart === bodyPart));
+          : FALLBACK_EXERCISES.filter((exercise) => String(exercise.bodyPart).toLowerCase() === targetBodyPart));
       }
 
       setLoading(false);
@@ -68,7 +62,7 @@ const Exercises = ({ exercises, setExercises, bodyPart, isSearchResult }) => {
 
   const indexOfLastExercise = currentPage * exercisesPerPage;
   const indexOfFirstExercise = indexOfLastExercise - exercisesPerPage;
-  const currentExercises = exercises.slice(indexOfFirstExercise, indexOfLastExercise);
+  const currentExercises = Array.isArray(exercises) ? exercises.slice(indexOfFirstExercise, indexOfLastExercise) : [];
 
   const paginate = (event, value) => {
     setCurrentPage(value);
@@ -97,7 +91,7 @@ const Exercises = ({ exercises, setExercises, bodyPart, isSearchResult }) => {
           Loading Exercises
         </Typography>
         <Typography color="text.secondary" mb={4}>
-          Fetching fresh ExerciseDB results and animations.
+          Fetching fresh results and animations from your server.
         </Typography>
         <Box
           sx={{

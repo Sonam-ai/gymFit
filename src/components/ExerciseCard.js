@@ -14,34 +14,38 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 
-import ExerciseGif from './ExerciseGif';
 import { normalizeExercise } from '../utils/exerciseData';
 import { isFavoriteExercise, toggleFavoriteExercise } from '../utils/favoriteExercises';
 
 const ExerciseCard = ({ exercise: rawExercise }) => {
   const theme = useTheme();
   const exercise = normalizeExercise(rawExercise);
+
   const [isFavorite, setIsFavorite] = useState(false);
+   console.log('Exercise Card Data:', exercise);
+  // Standardize and zero-pad the alphanumeric ID string (e.g., "0003")
+  let trueExerciseId = rawExercise?.id || exercise?.id || '';
+  if (trueExerciseId) {
+    trueExerciseId = String(trueExerciseId).padStart(4, '0');
+  }
 
   useEffect(() => {
-    if (!exercise?.id) return;
-
-    setIsFavorite(isFavoriteExercise(exercise.id));
-  }, [exercise?.id]);
+    if (!trueExerciseId) return;
+    setIsFavorite(isFavoriteExercise(trueExerciseId));
+  }, [trueExerciseId]);
 
   if (!exercise) return null;
 
   const handleFavoriteClick = (event) => {
     event.preventDefault();
     event.stopPropagation();
-
-    setIsFavorite(toggleFavoriteExercise(exercise));
+    setIsFavorite(toggleFavoriteExercise({ ...exercise, id: trueExerciseId }));
   };
 
   return (
     <Box
       component={Link}
-      to={`/exercise/${exercise.id}`}
+      to={`/exercise/${trueExerciseId}`}
       className="exercise-card"
       sx={{
         bgcolor: 'background.paper',
@@ -105,11 +109,24 @@ const ExerciseCard = ({ exercise: rawExercise }) => {
         </IconButton>
       </Tooltip>
 
-      <ExerciseGif
-        exercise={exercise}
-        height={280}
-        showLabel
-      />
+      {/* 🖼️ DIRECT PUBLIC FOLDER IMAGE RENDERING CONTAINER */}
+      <Box sx={{ width: '100%', height: 280, bgcolor: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
+        <img
+          src={exercise.gifUrl}
+          alt={exercise.name}
+          loading="lazy"
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          onError={(e) => {
+            // Check if the source URL doesn't end with .png yet to prevent an infinite loop
+            if (!e.target.src.endsWith('.png')) {
+              e.target.src = `/assets/exercise_images/${trueExerciseId}.png`;
+            } else {
+              // Final absolute system backup if neither layout is present
+              e.target.src = '/assets/images/Logo.png';
+            }
+          }}
+        />
+      </Box>
 
       <Stack sx={{ p: 2, flex: 1, gap: 1.5 }}>
         <Typography
@@ -154,12 +171,12 @@ const ExerciseCard = ({ exercise: rawExercise }) => {
           <Stack direction="row" alignItems="center" spacing={0.75}>
             <ListAltIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
             <Typography variant="body2" color="text.secondary">
-              {exercise.stepCount} guided steps from API
+              {exercise.stepCount} guided movement steps
             </Typography>
           </Stack>
         )}
 
-        {exercise.steps[0] && (
+        {exercise.steps && exercise.steps[0] && (
           <Typography
             variant="body2"
             color="text.secondary"
@@ -172,7 +189,7 @@ const ExerciseCard = ({ exercise: rawExercise }) => {
               fontStyle: 'italic',
             }}
           >
-            1. {exercise.steps[0].text}
+            1. {exercise.steps[0].text || exercise.steps[0]}
           </Typography>
         )}
       </Stack>

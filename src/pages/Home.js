@@ -50,7 +50,9 @@ const Home = () => {
         isSearchResult={isSearchResult}
       />
 
+      {/* CONNECTED: Added exercises prop to forward your local dataset entries straight to the AI generator */}
       <WorkoutGenerator
+        exercises={exercises}
         fitnessContext={fitnessContext}
         onBrowseBodyPart={handleBodyPartChange}
         onScrollToExercises={() => {

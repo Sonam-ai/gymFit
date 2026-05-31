@@ -10,11 +10,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
-import {
-  exerciseOptions,
-  fetchData,
-  getAllExercisesUrl,
-} from './utils/fetchData';
+import { fetchData } from '../components/utils/fetchData'; // Adjusted relative path
 import { getBodyPartImage } from '../utils/bodyPartImages';
 import { DEFAULT_BODY_PARTS, FALLBACK_EXERCISES } from '../utils/exerciseFallbackData';
 import { fixHttps } from '../utils/exerciseData';
@@ -49,15 +45,20 @@ const SearchExercises = ({
   const [animatedBodyParts, setAnimatedBodyParts] = useState({});
   const [loadingAnimatedBodyParts, setLoadingAnimatedBodyParts] = useState({});
 
+  // 1. Fetch categories dynamically from your new Express server array
   useEffect(() => {
     const fetchExercisesData = async () => {
-      const bodyPartData = await fetchData(
-        'https://exercisedb.p.rapidapi.com/exercises/bodyPartList',
-        exerciseOptions,
-      );
+      const exerciseData = await fetchData('/api/exercises');
 
-      if (Array.isArray(bodyPartData)) {
-        setBodyParts(['all', ...bodyPartData]);
+      if (Array.isArray(exerciseData) && exerciseData.length > 0) {
+        // Pull out every first muscle group from the primaryMuscles array
+        const rawParts = exerciseData.map(ex => 
+          ex.primaryMuscles && ex.primaryMuscles[0]
+        ).filter(Boolean);
+        
+        // De-duplicate them into lowercase text tokens
+        const uniqueParts = ['all', ...new Set(rawParts.map(part => String(part).toLowerCase()))];
+        setBodyParts(uniqueParts);
       } else {
         setBodyParts(DEFAULT_BODY_PARTS);
       }
@@ -73,6 +74,7 @@ const SearchExercises = ({
     }));
   }, [bodyParts]);
 
+  // 2. Load preview animations safely from your local backend collection
   useEffect(() => {
     if (bodyParts.length === 0) return undefined;
 
@@ -81,28 +83,35 @@ const SearchExercises = ({
     const fetchAnimatedBodyPartImages = async () => {
       setLoadingAnimatedBodyParts(Object.fromEntries(bodyParts.map((part) => [part, true])));
 
-      const exerciseData = await fetchData(getAllExercisesUrl(), exerciseOptions);
-
+      const exerciseData = await fetchData('/api/exercises');
       const exercisesForImages = Array.isArray(exerciseData) ? exerciseData : FALLBACK_EXERCISES;
 
       const nextImages = {};
       const nextAnimated = {};
 
-      await Promise.all(
-        bodyParts.map(async (part) => {
-          const exercise = part === 'all'
-            ? exercisesForImages.find((item) => item?.id)
-            : exercisesForImages.find((item) => item?.bodyPart === part && item?.id);
+      bodyParts.forEach((part) => {
+        const exercise = part === 'all'
+          ? exercisesForImages.find((item) => item?.id)
+          : exercisesForImages.find((item) => {
+              const itemMuscle = (item?.primaryMuscles && item.primaryMuscles[0]) || '';
+              return String(itemMuscle).toLowerCase() === String(part).toLowerCase() && item?.id;
+            });
 
-          if (!exercise?.id) return;
+        if (!exercise?.id) return;
 
-          const imageUrl = getExerciseImageUrl(exercise);
-          if (imageUrl) {
-            nextImages[part] = imageUrl;
-            nextAnimated[part] = true;
-          }
-        }),
-      );
+        // Map local path wrapper format for horizontal thumbnails preview loading
+        let imageUrl = '';
+        if (exercise.images && exercise.images[0]) {
+          imageUrl = `https://gymfit-api.onrender.com/images/${exercise.images[0]}`;
+        } else {
+          imageUrl = getExerciseImageUrl(exercise);
+        }
+
+        if (imageUrl) {
+          nextImages[part] = imageUrl;
+          nextAnimated[part] = true;
+        }
+      });
 
       if (!cancelled && Object.keys(nextImages).length > 0) {
         setBodyPartImages((current) => ({ ...current, ...nextImages }));
@@ -125,10 +134,12 @@ const SearchExercises = ({
     document.getElementById('exercises')?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // 3. Search Bar function to query your local dataset
   const handleSearch = async () => {
     const term = search.trim().toLowerCase();
     if (!term || !setExercises) return;
 
+    // Check if search query matches a category name string directly
     const matchedBodyPart = bodyParts.find(
       (part) => part !== 'all' && part.toLowerCase() === term,
     );
@@ -143,18 +154,15 @@ const SearchExercises = ({
 
     setIsSearchResult?.(true);
 
-    const exerciseData = await fetchData(
-      getAllExercisesUrl(),
-      exerciseOptions,
-    );
-
+    const exerciseData = await fetchData('/api/exercises');
     const exercisesForSearch = Array.isArray(exerciseData) ? exerciseData : FALLBACK_EXERCISES;
 
     const searchedExercises = exercisesForSearch.filter(
-      (exercise) => exercise.name?.toLowerCase().includes(term)
-        || exercise.target?.toLowerCase().includes(term)
-        || exercise.equipment?.toLowerCase().includes(term)
-        || exercise.bodyPart?.toLowerCase().includes(term),
+      (exercise) => 
+        exercise.name?.toLowerCase().includes(term)
+        || (exercise.target && exercise.target.toLowerCase().includes(term))
+        || (Array.isArray(exercise.primaryMuscles) && exercise.primaryMuscles.some(m => m.toLowerCase().includes(term)))
+        || (exercise.equipment && exercise.equipment.toLowerCase().includes(term))
     );
 
     setExercises(searchedExercises);
@@ -218,7 +226,7 @@ const SearchExercises = ({
         >
           <TextField
             value={search}
-            onChange={(e) => setSearch(e.target.value.toLowerCase())}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search exercises..."
             type="text"
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

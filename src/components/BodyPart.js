@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Chip, Stack, Typography, useTheme } from '@mui/material';
+import { Box, Stack, Typography, useTheme } from '@mui/material';
 
 import { getBodyPartImage } from '../utils/bodyPartImages';
 import ExercisePlaceholder from './ExercisePlaceholder';
@@ -118,22 +118,8 @@ const BodyPart = ({
               }}
             />
           )}
-          {(isAnimated || isLoadingAnimation) && (
-            <Chip
-              label={isAnimated ? 'API image' : 'Loading image'}
-              size="small"
-              sx={{
-                position: 'absolute',
-                top: 10,
-                left: 10,
-                zIndex: 2,
-                bgcolor: 'rgba(0,0,0,0.62)',
-                color: '#fff',
-                fontWeight: 700,
-                maxWidth: 'calc(100% - 20px)',
-              }}
-            />
-          )}
+          
+          {/* REMOVED: The old conditional API image chip indicator is gone! */}
         </Box>
 
         <Typography

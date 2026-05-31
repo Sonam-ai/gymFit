@@ -19,7 +19,10 @@ import ExerciseGif from './ExerciseGif';
 const ExerciseSteps = ({ exercise, showGif = true }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-  const steps = parseInstructions(exercise?.instructions);
+  const steps =
+  exercise?.steps?.length > 0
+    ? exercise.steps
+    : parseInstructions(exercise?.instructions);
   const [activeStep, setActiveStep] = useState(0);
 
   if (!steps.length) {

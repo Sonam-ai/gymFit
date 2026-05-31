@@ -1,188 +1,103 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom';
-import {
-  Box,
-  Breadcrumbs,
-  Chip,
-  Link,
-  Paper,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { Box, Typography, Container, CircularProgress, Button, Stack } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { useNavigate } from 'react-router-dom';
 
-import Loader from '../components/Loader';
-import ExerciseGif from '../components/ExerciseGif';
+// 1. Correct local utility pathing verified from your tree sidebar
+import { fetchData } from '../components/utils/fetchData'; 
+import { normalizeExercise } from '../utils/exerciseData';
+
+// 2. IMPORT REAL FILES: Using the actual filenames from your visual directory tree
+import ExercisePlaceholder from '../components/ExercisePlaceholder';
 import ExerciseSteps from '../components/ExerciseSteps';
 import ExerciseVideos from '../components/ExerciseVideos';
-import { exerciseOptions, fetchData } from '../components/utils/fetchData';
-import { normalizeExercise } from '../utils/exerciseData';
-import { FALLBACK_EXERCISES } from '../utils/exerciseFallbackData';
 
 const ExerciseDetail = () => {
-  const { id } = useParams();
-  const [exercise, setExercise] = useState(null);
+  const { id } = useParams(); 
+  const navigate = useNavigate();
+  const [exerciseDetail, setExerciseDetail] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    let cancelled = false;
 
-    const fetchExercise = async () => {
+    const fetchDetailedData = async () => {
       setLoading(true);
+      setError('');
+      
+      try {
+        // Queries your running local Express instance dataset endpoint wrapper
+        const rawData = await fetchData(`/api/exercises/details/${id}`);
+        
+        if (cancelled) return;
 
-      const data = await fetchData(
-        `https://exercisedb.p.rapidapi.com/exercises/exercise/${id}`,
-        exerciseOptions,
-      );
-
-      const fallbackExercise = FALLBACK_EXERCISES.find((item) => item.id === id);
-
-      if (data?.name || fallbackExercise) {
-        setExercise(normalizeExercise(data?.name ? data : fallbackExercise));
-      } else {
-        setExercise(null);
+        if (rawData && !rawData.error) {
+          const normalizedData = normalizeExercise(rawData);
+          setExerciseDetail(normalizedData);
+        } else {
+          setError('This exercise could not be located inside our local JSON database records.');
+        }
+      } catch (err) {
+        console.error('[Detail Page Fetch Error]', err);
+        if (!cancelled) setError('Failed to connect to the local asset server.');
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      setLoading(false);
     };
 
-    fetchExercise();
+    fetchDetailedData();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  if (loading) return <Loader />;
-
-  if (!exercise) {
+  if (loading) {
     return (
-      <Typography textAlign="center" mt={10} color="text.secondary">
-        Exercise not found.
-      </Typography>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress size={50} color="primary" />
+      </Box>
+    );
+  }
+
+  if (error || !exerciseDetail) {
+    return (
+      <Container sx={{ mt: 10, textAlign: 'center' }}>
+        <Typography variant="h5" color="error" fontWeight={600} mb={3}>
+          {error || 'Exercise data error.'}
+        </Typography>
+        <Button startIcon={<ArrowBackIcon />} variant="contained" onClick={() => navigate('/')}>
+          Go Back Home
+        </Button>
+      </Container>
     );
   }
 
   return (
-    <Box sx={{ mt: { lg: 4, xs: 2 }, px: { xs: 2, lg: 3 }, pb: 8 }}>
-      <Breadcrumbs sx={{ mb: 3 }}>
-        <Link
-          component={RouterLink}
-          to="/"
-          underline="hover"
-          color="text.secondary"
-          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-        >
-          <ArrowBackIcon fontSize="small" />
-          Back home
-        </Link>
-      </Breadcrumbs>
-
-      <Typography
-        variant="h3"
-        fontWeight={700}
-        textTransform="capitalize"
-        color="text.primary"
-        mb={2}
-        sx={{ fontSize: { lg: '42px', xs: '28px' } }}
+    <Box sx={{ mt: { lg: '96px', xs: '60px' }, px: { xs: 2, md: 6 }, pb: 6 }}>
+      {/* Back navigation safety hook link element */}
+      <Button 
+        startIcon={<ArrowBackIcon />} 
+        onClick={() => navigate('/')}
+        sx={{ mb: 4, textTransform: 'none', fontWeight: 600 }}
       >
-        {exercise.name}
-      </Typography>
+        Back to Dashboard
+      </Button>
 
-      <Stack direction="row" flexWrap="wrap" gap={1} mb={3}>
-        <Chip label={exercise.bodyPart} color="primary" sx={{ textTransform: 'capitalize' }} />
-        <Chip label={exercise.target} variant="outlined" sx={{ textTransform: 'capitalize' }} />
-        <Chip label={exercise.equipment} variant="outlined" sx={{ textTransform: 'capitalize' }} />
-        {exercise.difficulty && (
-          <Chip label={exercise.difficulty} color="secondary" sx={{ textTransform: 'capitalize' }} />
-        )}
-        {exercise.category && (
-          <Chip label={exercise.category} sx={{ textTransform: 'capitalize' }} />
-        )}
-      </Stack>
-
-      {exercise.description && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 2.5,
-            mb: 4,
-            borderRadius: 3,
-            border: 1,
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-          }}
-        >
-          <Stack direction="row" spacing={1} alignItems="flex-start">
-            <InfoOutlinedIcon color="primary" sx={{ mt: 0.25 }} />
-            <Typography color="text.secondary" lineHeight={1.7}>
-              {exercise.description}
-            </Typography>
-          </Stack>
-        </Paper>
-      )}
-
-      {exercise.secondaryMuscles?.length > 0 && (
-        <Stack direction="row" flexWrap="wrap" gap={1} mb={4} alignItems="center">
-          <Typography variant="body2" fontWeight={600} color="text.secondary">
-            Secondary muscles:
-          </Typography>
-          {exercise.secondaryMuscles.map((muscle) => (
-            <Chip
-              key={muscle}
-              label={muscle}
-              size="small"
-              sx={{ textTransform: 'capitalize' }}
-            />
-          ))}
-        </Stack>
-      )}
-
-      <Stack
-        direction={{ xs: 'column', lg: 'row' }}
-        spacing={4}
-        alignItems="flex-start"
-      >
-        <Box
-          sx={{
-            width: { xs: '100%', lg: '42%' },
-            flexShrink: 0,
-            position: { lg: 'sticky' },
-            top: { lg: 100 },
-          }}
-        >
-          <ExerciseGif exercise={exercise} height={480} showLabel />
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            textAlign="center"
-            mt={1.5}
-          >
-            Live animation from ExerciseDB (RapidAPI)
-          </Typography>
-        </Box>
-
-        <Paper
-          elevation={0}
-          sx={{
-            flex: 1,
-            width: '100%',
-            p: { xs: 2.5, lg: 3 },
-            borderRadius: 4,
-            border: 1,
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-          }}
-        >
-          <ExerciseSteps exercise={exercise} showGif={false} />
-          <Box
-            sx={{
-              mt: 4,
-              pt: 4,
-              borderTop: 1,
-              borderColor: 'divider',
-            }}
-          >
-            <ExerciseVideos exercise={exercise} />
-          </Box>
-        </Paper>
+      <Stack spacing={5}>
+        {/* Renders your local image asset canvas blocks beautifully */}
+        <ExercisePlaceholder
+           name={exerciseDetail.name}
+           gifUrl={exerciseDetail.gifUrl}
+        />
+        
+        {/* Maps out your parsed layout step arrays smoothly */}
+        <ExerciseSteps exercise={exerciseDetail} />
+        
+        {/* Video integration block row context */}
+        <ExerciseVideos exerciseVideos={[]} name={exerciseDetail.name} />
       </Stack>
     </Box>
   );
